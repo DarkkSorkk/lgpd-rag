@@ -69,6 +69,12 @@ class DadosDaLgpd(unittest.TestCase):
             if d.situacao == "vigente":
                 self.assertGreater(len(d.texto), 3, d.id)
 
+    def test_nenhum_vetado_ou_revogado_marcado_como_vigente(self):
+        # Pegou o "Art. 23, II - (VETADO); e", que o leitor marcava como vigente.
+        for d in self.lista:
+            if d.situacao == "vigente":
+                self.assertNotRegex(d.texto, r"(?i)^\(?\s*(vetad|revogad)", d.rotulo)
+
     def test_cabecalho(self):
         self.assertEqual(len(self.cabecalho["sha256_da_pagina"]), 64)
         self.assertTrue(self.cabecalho["fonte"].startswith("https://www.planalto.gov.br/"))

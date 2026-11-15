@@ -164,6 +164,10 @@ class LerLinhas(unittest.TestCase):
         self.assertEqual(lista[0].capitulo, "CAPÍTULO IX - DA AGÊNCIA NACIONAL DE PROTEÇÃO DE DADOS")
         self.assertEqual(lista[0].situacao, "vetado")
 
+    def test_vetado_no_meio_da_lista(self):
+        lista = ler_linhas(["Art. 23. Caput:", "I - primeiro;", "II - (VETADO); e", "III - (revogado); ou"])
+        self.assertEqual([d.situacao for d in lista], ["vigente", "vigente", "vetado", "revogado"])
+
     def test_palavra_com_letras_romanas_nao_vira_inciso(self):
         lista = ler_linhas(["Art. 1º Texto que continua", "CIVIL - na linha seguinte."])
         self.assertEqual(len(lista), 1)

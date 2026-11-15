@@ -2,7 +2,7 @@
 
 Pergunte à LGPD e receba a resposta com o dispositivo de onde ela saiu, conferido pelo código contra o texto oficial da lei.
 
-> **Em construção.** Etapa 2 de 5 pronta: a lei dividida em dispositivos e a busca por palavra, medida contra um gabarito. Faltam a resposta com citação conferida, o modelo de verdade e a publicação.
+> **Em construção.** Etapa 3 de 5 pronta: a lei dividida em dispositivos, a busca medida contra um gabarito e a resposta com citação conferida pelo código. Faltam o modelo de verdade e a publicação.
 
 ## O texto da lei
 
@@ -70,6 +70,32 @@ Para medir:
 python -m lgpd_rag.avaliar gabarito/desenvolvimento.jsonl
 python -m lgpd_rag.avaliar gabarito/teste.jsonl --sem-glossario
 python -m lgpd_rag.avaliar gabarito/teste.jsonl --limiar 0.28
+```
+
+## A resposta com citação conferida
+
+1. **A busca acha os dispositivos.** Se nenhuma palavra da pergunta existe na lei, a resposta é uma recusa, e o modelo nem é chamado.
+2. **Os trechos vão para o modelo.** Vão os dispositivos encontrados, cada um com o caput de cima. O modelo devolve um JSON com a resposta e as citações: o id do dispositivo e um pedaço copiado dele.
+3. **O código confere a resposta** ([`conferencia.py`](lgpd_rag/conferencia.py)). Só aparece para quem perguntou a resposta que cumprir todas estas condições:
+   - tem pelo menos uma citação;
+   - cada citação aponta para um dispositivo que foi enviado ao modelo;
+   - o trecho citado está no texto desse dispositivo, letra por letra. Só não contam diferenças de espaço, maiúscula e aspas;
+   - a resposta só menciona artigos citados, ou que aparecem no texto dos dispositivos citados.
+
+Se alguma condição falha, quem perguntou vê uma frase fixa ("Não consegui uma resposta com citação conferida na lei") e a lista de dispositivos que a busca achou. Quando o modelo diz que a lei não trata do assunto, o texto mostrado também é uma frase fixa do código, nunca o que o modelo escreveu.
+
+**Prompt injection:**
+- As instruções ficam só na mensagem de sistema, que só o código escreve.
+- A pergunta e os trechos vão entre marcadores, como dado.
+- Os sinais `<` e `>` da pergunta são trocados, para quem pergunta não conseguir fechar um marcador e abrir outro.
+- Os testes simulam o pior caso: um modelo que obedece à ordem escondida na pergunta. Mesmo assim, nada passa sem uma citação real da lei.
+
+**O que a conferência não garante:** ela garante que toda resposta está amarrada a um trecho real da lei. Não garante que a conclusão esteja certa, porque o modelo pode citar um trecho real e interpretar errado. Isso a etapa 4 mede, com o modelo de verdade. As instruções do modelo não são segredo: estão neste repositório ([`prompt.py`](lgpd_rag/prompt.py)).
+
+Para ver o que iria para o modelo, sem chamar nenhum:
+
+```
+python -m lgpd_rag.perguntar "Minha empresa precisa ter um DPO?"
 ```
 
 ## Testes

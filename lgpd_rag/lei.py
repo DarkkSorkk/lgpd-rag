@@ -66,9 +66,11 @@ _ROMANO = re.compile(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"
 _FIM = re.compile(r"^Bras[íi]lia\s*,")
 _SO_PONTOS = re.compile(r"^[.…\s”\"]*$")
 # "(Revogado).", "(revogado);" ou "(Revogado pela Lei nº 14.460, de 2022)", sozinhos
-# ou no fim de um texto antigo que o Planalto deixou na página.
-_REVOGADO = re.compile(r"(?:^|\s)\(\s*revogad[oa]s?\b[^()]*\)\s*[.;]?$", re.IGNORECASE)
-_VETADO = re.compile(r"^\(?\s*vetad[oa]s?\s*\)?\s*[.;]?$", re.IGNORECASE)
+# ou no fim de um texto antigo que o Planalto deixou na página. O inciso pode
+# terminar com o "e" ou "ou" que liga a lista: "II - (VETADO); e".
+_FIM_DE_LISTA = r"\s*[.;]?\s*(?:e|ou)?\s*$"
+_REVOGADO = re.compile(r"(?:^|\s)\(\s*revogad[oa]s?\b[^()]*\)" + _FIM_DE_LISTA, re.IGNORECASE)
+_VETADO = re.compile(r"^\(?\s*vetad[oa]s?\s*\)?" + _FIM_DE_LISTA, re.IGNORECASE)
 
 
 def _espacos(texto: str) -> str:
