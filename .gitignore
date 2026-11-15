@@ -1,0 +1,13 @@
+# Página salva do Planalto. O texto da lei vai para dados/lgpd.json.
+fonte/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Chaves de API ficam fora do repositório
+.env
