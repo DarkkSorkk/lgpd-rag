@@ -2,7 +2,7 @@
 
 Pergunte à LGPD e receba a resposta com o dispositivo de onde ela saiu, conferido pelo código contra o texto oficial da lei.
 
-> **Em construção.** Etapa 1 de 5: a lei dividida em dispositivos (artigos, parágrafos, incisos e alíneas).
+> **Em construção.** Etapa 2 de 5 pronta: a lei dividida em dispositivos e a busca por palavra, medida contra um gabarito. Faltam a resposta com citação conferida, o modelo de verdade e a publicação.
 
 ## O texto da lei
 
@@ -23,6 +23,54 @@ O resultado vai para `dados/lgpd.json`, com um dispositivo por linha e o SHA-256
 - **Notas do Planalto:** "Redação dada pela...", "Incluído pela..." e "Vigência" saem do texto.
 - **Dispositivos revogados e vetados:** ficam na lista, marcados, para a numeração não ter buracos.
 - **Direito autoral:** lei não tem direito autoral (Lei nº 9.610/98, art. 8º, IV), então o texto pode ficar no repositório.
+
+## A busca
+
+A busca acha os dispositivos que respondem à pergunta. Ela roda sem IA e sem custo.
+
+- **O que é procurado:** cada dispositivo em vigor. Inciso e alínea são pedaços de frase ("II - acesso aos dados;"), então levam junto o texto do caput.
+- **Como as palavras são comparadas:** sem acento, no singular e cortadas nos 6 primeiros caracteres. Assim, "consentimento" e "consentir" viram a mesma palavra. Testei cortes de 4, 5, 6 e 7 caracteres, e também sem corte; o de 6 acertou mais no desenvolvimento.
+- **Ranking:** BM25.
+- **Glossário** ([`glossario.py`](lgpd_rag/glossario.py)): troca palavras do dia a dia pelos termos da lei. Por exemplo, "vazamento" vira "incidente de segurança", "DPO" vira "encarregado" e "empresa" vira "controlador".
+- **Resultado:** os 5 melhores artigos, com até 3 dispositivos de cada. Assim, um artigo com muitos incisos parecidos não esconde outro artigo que também responde.
+
+## Gabarito e resultados
+
+O gabarito tem perguntas com os dispositivos que as respondem, escritos à mão e conferidos no texto da lei. Algumas perguntas usam os termos da lei, outras usam palavras do dia a dia, e algumas tratam de assuntos fora da LGPD. São dois arquivos:
+
+- [`desenvolvimento.jsonl`](gabarito/desenvolvimento.jsonl): 30 perguntas que a lei responde e 4 fora dela. Serviu para ajustar a busca: o glossário, o corte das palavras e o limite de recusa.
+- [`teste.jsonl`](gabarito/teste.jsonl): 16 perguntas que a lei responde e 4 fora dela. Foi medido uma vez só, no fim, com tudo congelado.
+
+| | Desenvolvimento (usado para ajustar) | Teste (medido uma vez) |
+|---|---|---|
+| Artigo certo em 1º lugar | 21/30 (70%) | 13/16 (81%) |
+| Artigo certo entre os 3 primeiros | 28/30 (93%) | 14/16 (88%) |
+| Artigo certo entre os 5 primeiros | 30/30 (100%) | 14/16 (88%) |
+| Dispositivo certo entre os 5 primeiros | 29/30 (97%) | 13/16 (81%) |
+
+Sem o glossário, o teste cai para 62% em 1º lugar e 81% entre os 5 primeiros.
+
+**O que a busca erra no teste:**
+- "Posso reclamar de uma empresa no Procon?": a lei diz "organismos de defesa do consumidor" (art. 18, § 8º).
+- "A empresa pode ser multada todos os dias?": a lei diz "multa diária" (art. 52, III).
+
+A busca por palavra não liga sinônimos que não estão no glossário. A busca por significado (embeddings) pode entrar na etapa 4, se a medição com o modelo mostrar que compensa o custo.
+
+**O que não deu certo: a recusa pela busca.**
+- **A tentativa:** a busca mede quanto das palavras da pergunta existe na lei e recusa quando é pouco. O limite foi escolhido no desenvolvimento (0,28).
+- **O resultado no teste:** recusou 3 de 16 perguntas boas e deixou passar 3 de 4 perguntas de fora.
+- **A conclusão:** a busca por palavra não sabe dizer quando a lei não trata do assunto.
+- **Como ficou:** agora ela só recusa quando nenhuma palavra da pergunta existe na lei ("alíquota do ICMS"). O resto da recusa fica com o modelo, que lê os dispositivos (etapa 3), e com o código, que confere a citação.
+
+O conjunto de teste já foi visto uma vez. Para a medição final com o modelo (etapa 4), um conjunto novo será escrito antes de rodar.
+
+Para medir:
+
+```
+python -m lgpd_rag.avaliar gabarito/desenvolvimento.jsonl
+python -m lgpd_rag.avaliar gabarito/teste.jsonl --sem-glossario
+python -m lgpd_rag.avaliar gabarito/teste.jsonl --limiar 0.28
+```
 
 ## Testes
 

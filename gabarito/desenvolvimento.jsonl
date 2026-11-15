@@ -1,0 +1,34 @@
+{"pergunta": "Quais são as hipóteses em que o tratamento de dados pessoais é permitido?", "esperado": ["art7"], "tipo": "lei"}
+{"pergunta": "O legítimo interesse do controlador pode justificar o tratamento de dados?", "esperado": ["art7.IX", "art10"], "tipo": "lei"}
+{"pergunta": "O que é dado pessoal sensível?", "esperado": ["art5.II"], "tipo": "lei"}
+{"pergunta": "O que é anonimização?", "esperado": ["art5.XI"], "tipo": "lei"}
+{"pergunta": "Quem é o controlador?", "esperado": ["art5.VI"], "tipo": "lei"}
+{"pergunta": "Qual a diferença entre controlador e operador?", "esperado": ["art5.VI", "art5.VII"], "tipo": "lei"}
+{"pergunta": "Quais são as atividades do encarregado?", "esperado": ["art41.p2"], "tipo": "lei"}
+{"pergunta": "Quais direitos o titular pode exigir do controlador?", "esperado": ["art18"], "tipo": "lei"}
+{"pergunta": "O consentimento pode ser revogado?", "esperado": ["art8.p5", "art18.IX"], "tipo": "lei"}
+{"pergunta": "Como o consentimento deve ser fornecido?", "esperado": ["art8"], "tipo": "lei"}
+{"pergunta": "Como deve ser feito o tratamento de dados de crianças?", "esperado": ["art14"], "tipo": "lei"}
+{"pergunta": "Em que casos termina o tratamento de dados pessoais?", "esperado": ["art15"], "tipo": "lei"}
+{"pergunta": "Quais princípios o tratamento de dados deve seguir?", "esperado": ["art6"], "tipo": "lei"}
+{"pergunta": "Em quais casos a transferência internacional de dados é permitida?", "esperado": ["art33"], "tipo": "lei"}
+{"pergunta": "Quais sanções administrativas a autoridade nacional pode aplicar?", "esperado": ["art52"], "tipo": "lei"}
+{"pergunta": "O que deve conter a comunicação de incidente de segurança?", "esperado": ["art48.p1"], "tipo": "lei"}
+{"pergunta": "A LGPD se aplica ao tratamento de dados para fins jornalísticos?", "esperado": ["art4.II"], "tipo": "lei"}
+{"pergunta": "Quem responde pelos danos causados no tratamento de dados pessoais?", "esperado": ["art42"], "tipo": "lei"}
+{"pergunta": "Os agentes de tratamento precisam manter registro das operações?", "esperado": ["art37"], "tipo": "lei"}
+{"pergunta": "Quais medidas de segurança os agentes de tratamento devem adotar?", "esperado": ["art46"], "tipo": "lei"}
+{"pergunta": "Teve um vazamento de dados na minha empresa. O que eu sou obrigado a fazer?", "esperado": ["art48"], "tipo": "cotidiana"}
+{"pergunta": "Qual o valor máximo da multa por descumprir a LGPD?", "esperado": ["art52.II"], "tipo": "cotidiana"}
+{"pergunta": "Minha empresa precisa ter um DPO?", "esperado": ["art41"], "tipo": "cotidiana"}
+{"pergunta": "Posso pedir para uma empresa apagar os meus dados?", "esperado": ["art18.IV", "art18.VI"], "tipo": "cotidiana"}
+{"pergunta": "Posso guardar os dados de um cliente depois que ele cancelou o contrato?", "esperado": ["art15", "art16"], "tipo": "cotidiana"}
+{"pergunta": "Meu filho de 10 anos pode se cadastrar num jogo online?", "esperado": ["art14.p1", "art14.p4"], "tipo": "cotidiana"}
+{"pergunta": "Posso salvar os dados dos meus clientes num servidor nos Estados Unidos?", "esperado": ["art33"], "tipo": "cotidiana"}
+{"pergunta": "Preciso pedir autorização do cliente para usar os dados dele?", "esperado": ["art7.I", "art8"], "tipo": "cotidiana"}
+{"pergunta": "A prefeitura pode usar os meus dados pessoais?", "esperado": ["art7.III", "art23"], "tipo": "cotidiana"}
+{"pergunta": "Quero levar meus dados de um banco para outro. A lei garante isso?", "esperado": ["art18.V"], "tipo": "cotidiana"}
+{"pergunta": "Qual o prazo para pagar o IPVA?", "esperado": [], "tipo": "fora"}
+{"pergunta": "Quantos dias de férias um funcionário tem por ano?", "esperado": [], "tipo": "fora"}
+{"pergunta": "Qual é a alíquota do ICMS em São Paulo?", "esperado": [], "tipo": "fora"}
+{"pergunta": "Como registrar uma marca no INPI?", "esperado": [], "tipo": "fora"}

@@ -1,0 +1,20 @@
+{"pergunta": "Saúde, religião e opinião política são dados sensíveis?", "esperado": ["art5.II"], "tipo": "lei"}
+{"pergunta": "O que a lei chama de operador?", "esperado": ["art5.VII"], "tipo": "lei"}
+{"pergunta": "Quem precisa indicar o encarregado pelo tratamento de dados?", "esperado": ["art41"], "tipo": "lei"}
+{"pergunta": "O titular tem direito de corrigir dados errados?", "esperado": ["art18.III"], "tipo": "lei"}
+{"pergunta": "O titular pode saber com quem a empresa compartilhou os dados dele?", "esperado": ["art18.VII"], "tipo": "lei"}
+{"pergunta": "A LGPD vale para quem usa dados só para fins particulares, sem fins econômicos?", "esperado": ["art4.I"], "tipo": "lei"}
+{"pergunta": "Os dados devem ser eliminados quando o tratamento termina?", "esperado": ["art16"], "tipo": "lei"}
+{"pergunta": "Quando a autoridade nacional pode pedir o relatório de impacto?", "esperado": ["art38", "art10.p3"], "tipo": "lei"}
+{"pergunta": "Dados tornados públicos pelo próprio titular precisam de consentimento?", "esperado": ["art7.p4"], "tipo": "lei"}
+{"pergunta": "O que é o princípio da necessidade?", "esperado": ["art6.III"], "tipo": "lei"}
+{"pergunta": "Quando a LGPD entrou em vigor?", "esperado": ["art65"], "tipo": "lei"}
+{"pergunta": "Fui vítima de um vazamento. A empresa tinha que me avisar?", "esperado": ["art48"], "tipo": "cotidiana"}
+{"pergunta": "Quanto custa para o titular pedir acesso aos próprios dados?", "esperado": ["art18.p5"], "tipo": "cotidiana"}
+{"pergunta": "Posso reclamar de uma empresa no Procon por causa dos meus dados?", "esperado": ["art18.p8"], "tipo": "cotidiana"}
+{"pergunta": "Uma escola pode usar dados dos alunos menores de idade?", "esperado": ["art14"], "tipo": "cotidiana"}
+{"pergunta": "A empresa pode ser multada todos os dias até corrigir o problema?", "esperado": ["art52.III"], "tipo": "cotidiana"}
+{"pergunta": "Qual a pena para o crime de furto?", "esperado": [], "tipo": "fora"}
+{"pergunta": "Como calcular o 13º salário?", "esperado": [], "tipo": "fora"}
+{"pergunta": "Qual o prazo de garantia de um produto com defeito?", "esperado": [], "tipo": "fora"}
+{"pergunta": "Como funciona a aposentadoria por idade?", "esperado": [], "tipo": "fora"}
