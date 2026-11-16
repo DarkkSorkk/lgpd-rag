@@ -4,11 +4,14 @@
 
 Pergunte à LGPD e receba a resposta com o dispositivo de onde ela saiu, conferido pelo código contra o texto oficial da lei.
 
-> **English:** a small RAG over Brazil's data protection law (LGPD). Every answer cites the provision it came from, and code checks each quote, letter by letter, against the official text before anything is shown. Measured on a question set written before the last code changes, with every answer reviewed by hand. Python, no dependencies.
+**Teste no ar:** [easyia.org/amostra/lgpd](https://easyia.org/amostra/lgpd). Dá para abrir respostas gravadas, sem custo, ou fazer as suas perguntas, com limite por dia.
+
+> **English:** a small RAG over Brazil's data protection law (LGPD). Every answer cites the provision it came from, and code checks each quote, letter by letter, against the official text before anything is shown. Measured on a question set written before the last code changes, with every answer reviewed by hand. Python, no dependencies. Try it live at [easyia.org/amostra/lgpd](https://easyia.org/amostra/lgpd) (in Portuguese).
 
 **Em resumo:**
 - **Só aparece resposta com citação conferida.** O modelo devolve a resposta e um trecho copiado de cada dispositivo citado, e o código confere se o trecho está mesmo na lei. Se não estiver, quem perguntou vê uma frase fixa, nunca o que o modelo escreveu.
 - **Medido num gabarito escrito antes de mexer no código**, com cada resposta revisada à mão. Das 20 perguntas que a lei responde, 16 respostas estão certas e 2 certas mas incompletas, e nenhuma inventou dispositivo ou disse o contrário da lei. As 5 perguntas de fora da LGPD foram recusadas, e nenhum dos 6 ataques de prompt injection funcionou. Veja [com o modelo](#com-o-modelo).
+- **No ar, com o mesmo código:** as 25 perguntas do gabarito novo foram feitas pelo site. Em 24, a situação foi a mesma da rodada revisada (respondida ou recusada). A outra tinha sido barrada por um defeito da conferência, já corrigido, e passou. Veja [no ar](#no-ar).
 - **O que falhou também está aqui:** a busca por palavra não liga "guardados" a "conservação", e uma regra da conferência barrou uma resposta que não tinha como passar (já corrigida).
 - **Sem dependências:** Python 3.12 ou mais novo. Os testes rodam no CI com um modelo simulado, sem custo. A avaliação com o modelo de verdade só roda com `--confirmo-custo` e para antes do teto de gasto.
 
@@ -245,6 +248,33 @@ python -m lgpd_rag.avaliar gabarito/final2.jsonl
 python -m lgpd_rag.avaliar gabarito/desenvolvimento.jsonl --sem-definicoes --sem-listas
 python -m lgpd_rag.avaliar_respostas gabarito/final2.jsonl --confirmo-custo --teto-usd 0.30
 ```
+
+## No ar
+
+A página [easyia.org/amostra/lgpd](https://easyia.org/amostra/lgpd) usa este código no commit `5ecde48`, copiado sem mudança e conferido arquivo por arquivo pelo SHA-256. A busca, as instruções do modelo e a conferência são as daqui. Em volta delas, um serviço privado no Google Cloud cuida da proteção contra robôs, dos limites por visitante e por dia e do orçamento, e chama o modelo pelo Vertex AI.
+
+**Como foi medido:** em 16/11/2026, as 25 perguntas do [`final2.jsonl`](gabarito/final2.jsonl) foram feitas pelo site, pelo mesmo caminho de um visitante. Cada resposta foi revisada à mão contra a nota do gabarito, como na rodada anterior.
+
+| Gabarito novo: 20 perguntas que a lei responde | No ar | Rodada de 16/11 |
+|---|---|---|
+| Respondidas com citação conferida | 19/20 | 18/20 |
+| Certas na revisão manual | 16/20 | 16/20 |
+| Certas, mas incompletas | 3/20 | 2/20 |
+| Recusada porque a busca não achou o dispositivo | 1/20 | 1/20 |
+| Barrada pela conferência | 0/20 | 1/20 |
+| Inventaram dispositivo ou disseram o contrário da lei | 0/20 | 0/20 |
+
+As 5 perguntas fora da LGPD foram recusadas, como na rodada de 16/11.
+
+**O que mudou:**
+- **A resposta barrada passou.** A pergunta é sobre os critérios para aplicar uma sanção, e tinha sido barrada pelo defeito do trecho curto. No ar, já com a correção, a resposta trouxe os 11 critérios do art. 52, § 1º, e está certa. Não dá para saber se a resposta barrada antes era a mesma.
+- **Uma resposta saiu menos completa.** Em "O governo pode passar meus dados para uma empresa privada?", o modelo disse que há exceções, mas não disse quais. Na rodada de 16/11, ele tinha listado as quatro. Os trechos enviados foram os mesmos, e a temperatura é 0. Mesmo assim, a mesma pergunta pode sair resumida de outro jeito.
+- **Os ataques de prompt injection** não foram repetidos no ar.
+
+**Custo e tempo:**
+- US$ 0,0402 nas 23 perguntas que chamaram o modelo, cerca de US$ 0,0017 cada. As outras 2 foram recusadas pela busca, sem chamar o modelo. O valor é estimado com os tokens que o Vertex AI informou.
+- No serviço, nas perguntas que chamaram o modelo, a mediana foi 3,8 s, e 21 das 23 levaram até 6,7 s.
+- A mais lenta levou 56 s, perto do limite de 60 s do serviço.
 
 ## Testes
 
