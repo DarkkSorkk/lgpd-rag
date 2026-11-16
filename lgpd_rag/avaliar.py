@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .busca import Busca
+from .contexto import LISTA_MAXIMA, Contexto
 from .glossario import GLOSSARIO
 from .lei import carregar
 
@@ -61,6 +62,9 @@ class Medida:
     fora: int = 0
     fora_recusadas: int = 0
     na_lei_recusadas: int = 0
+    # O dispositivo esperado está no que iria para o modelo e, se ele abre uma lista,
+    # todos os itens dela também. Sem isso, a resposta sai incompleta ou recusada.
+    inteira_nos_trechos: int = 0
 
     def linhas(self) -> list[str]:
         pct = lambda a, b: f"{a}/{b} ({100 * a / b:.0f}%)" if b else "-"
@@ -71,12 +75,16 @@ class Medida:
             f"  artigo certo entre os 5 primeiros: {pct(self.artigo_nos_5, self.na_lei)}",
             f"  dispositivo certo entre os 5:      {pct(self.dispositivo_nos_5, self.na_lei)}",
             f"  recusadas por engano:              {pct(self.na_lei_recusadas, self.na_lei)}",
+            f"  resposta inteira nos trechos:      {pct(self.inteira_nos_trechos, self.na_lei)}",
             f"Perguntas fora da LGPD: {self.fora}",
             f"  recusadas, como devia:             {pct(self.fora_recusadas, self.fora)}",
         ]
 
 
-def avaliar(busca: Busca, perguntas: list[Pergunta], limiar: float = LIMIAR_PADRAO) -> tuple[Medida, list[str]]:
+def avaliar(
+    busca: Busca, perguntas: list[Pergunta], limiar: float = LIMIAR_PADRAO, contexto: Contexto | None = None
+) -> tuple[Medida, list[str]]:
+    contexto = contexto or Contexto(busca.dispositivos)
     medida, erros = Medida(), []
     for p in perguntas:
         resposta = busca.buscar(p.pergunta, artigos=5)
@@ -97,8 +105,11 @@ def avaliar(busca: Busca, perguntas: list[Pergunta], limiar: float = LIMIAR_PADR
         acertou_artigo = any(a in artigos_esperados for a in artigos[:5])
         medida.artigo_nos_5 += acertou_artigo
         medida.dispositivo_nos_5 += any(cobre(e, i) for e in p.esperado for i in ids)
-        if not acertou_artigo or recusou:
-            motivo = "recusou" if recusou else "errou o artigo"
+        enviados = {d.id for d in contexto.trechos(r.dispositivo for r in resposta.resultados)}
+        inteira = any(e in enviados and all(i.id in enviados for i in contexto.itens(e)) for e in p.esperado)
+        medida.inteira_nos_trechos += inteira
+        if not acertou_artigo or recusou or not inteira:
+            motivo = "recusou" if recusou else "errou o artigo" if not acertou_artigo else "resposta incompleta"
             erros.append(
                 f"[{motivo}, cobertura {resposta.cobertura:.2f}] {p.pergunta} "
                 f"(esperado {p.esperado}) -> {artigos}"
@@ -113,13 +124,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sem-glossario", action="store_true")
     parser.add_argument("--corte", type=int, default=None, help="tamanho do radical (padrão da busca)")
     parser.add_argument("--limiar", type=float, default=LIMIAR_PADRAO)
+    parser.add_argument("--sem-definicoes", action="store_true", help="sem o atalho para as definições do art. 5º")
+    parser.add_argument("--sem-listas", action="store_true", help="sem completar as listas nos trechos")
     args = parser.parse_args(argv)
 
     opcoes = {"glossario": None if args.sem_glossario else GLOSSARIO}
     if args.corte is not None:
         opcoes["corte"] = args.corte or None
-    busca = Busca(carregar(args.dados), **opcoes)
-    medida, erros = avaliar(busca, ler_gabarito(args.gabarito), args.limiar)
+    if args.sem_definicoes:
+        opcoes["definicoes"] = False
+    lei = carregar(args.dados)
+    busca = Busca(lei, **opcoes)
+    contexto = Contexto(lei, lista_maxima=0 if args.sem_listas else LISTA_MAXIMA)
+    medida, erros = avaliar(busca, ler_gabarito(args.gabarito), args.limiar, contexto)
     print("\n".join(medida.linhas()))
     if erros:
         print("\nErros:")

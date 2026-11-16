@@ -39,6 +39,20 @@ GLOSSARIO: dict[str, str] = {
     "fora do brasil": "transferência internacional",
     "estados unidos": "transferência internacional",
     "europa": "transferência internacional",
+    # Empresa de fora que trata dados de quem está aqui: a lei vale "independentemente
+    # do país de sua sede", quando os dados são de pessoas no território nacional
+    # (art. 3º). Sem estas entradas, o art. 3º sumia da busca (rodada de 15/11/2026).
+    # Pôr "país sede" também nas entradas acima tirou o art. 33 do 1º lugar nas
+    # perguntas de transferência do desenvolvimento, então elas ficaram como estavam.
+    "estrangeiro": "país sede",
+    "estrangeira": "país sede",
+    "estrangeiros": "país sede",
+    "estrangeiras": "país sede",
+    "no brasil": "território nacional",
+    "brasileiro": "território nacional",
+    "brasileira": "território nacional",
+    "brasileiros": "território nacional",
+    "brasileiras": "território nacional",
     # poder público (art. 23)
     "prefeitura": "poder público pessoa jurídica de direito público",
     "governo": "poder público pessoa jurídica de direito público",

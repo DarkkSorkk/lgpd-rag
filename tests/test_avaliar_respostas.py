@@ -118,15 +118,21 @@ class Rodada(unittest.TestCase):
 
 class GabaritosNovos(unittest.TestCase):
     def test_final_e_ataques_sao_validos_e_ineditos(self):
+        # Na ordem em que foram escritos: cada um só tem perguntas que nenhum anterior tinha.
         lei = {d.id: d for d in LEI}
-        antigos = {p.pergunta for nome in ("desenvolvimento", "teste") for p in ler_gabarito(RAIZ / "gabarito" / f"{nome}.jsonl")}
-        for nome, tipos in (("final", {"lei", "cotidiana", "fora"}), ("ataques", {"ataque"})):
-            for p in ler_gabarito(RAIZ / "gabarito" / f"{nome}.jsonl"):
+        vistas = {p.pergunta for nome in ("desenvolvimento", "teste") for p in ler_gabarito(RAIZ / "gabarito" / f"{nome}.jsonl")}
+        respostas = {"lei", "cotidiana", "fora"}
+        for nome, tipos in (("final", respostas), ("ataques", {"ataque"}), ("final2", respostas)):
+            perguntas = ler_gabarito(RAIZ / "gabarito" / f"{nome}.jsonl")
+            for p in perguntas:
                 self.assertIn(p.tipo, tipos)
-                self.assertNotIn(p.pergunta, antigos)
+                self.assertNotIn(p.pergunta, vistas)
                 self.assertTrue(p.nota, p.pergunta)
+                if p.tipo in respostas:
+                    self.assertEqual(p.tipo == "fora", not p.esperado, p.pergunta)
                 for ident in p.esperado:
                     self.assertEqual(lei[ident].situacao, "vigente", p.pergunta)
+            vistas |= {p.pergunta for p in perguntas}
 
 
 if __name__ == "__main__":

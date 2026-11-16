@@ -2,8 +2,9 @@ import json
 import unittest
 from pathlib import Path
 
-from lgpd_rag.avaliar import avaliar, cobre, ler_gabarito
+from lgpd_rag.avaliar import Pergunta, avaliar, cobre, ler_gabarito
 from lgpd_rag.busca import Busca
+from lgpd_rag.contexto import Contexto
 from lgpd_rag.glossario import GLOSSARIO
 from lgpd_rag.lei import Dispositivo, carregar
 from lgpd_rag.texto import palavras, sem_acento, singular
@@ -74,11 +75,69 @@ class BuscaEmLeiPequena(unittest.TestCase):
         busca = Busca(self.lei, glossario={"dpo": "encarregado"})
         self.assertEqual(busca.buscar("Preciso de DPO?").artigos[0], "1")
 
+    def test_lista_inteira_nos_trechos(self):
+        # A busca acha só um inciso; a medida só conta a resposta inteira com a lista toda.
+        lei = self.lei + [disp("art9", "Não respondem quando provarem:"),
+                          disp("art9.I", "que não trataram os dados;", "inciso", "art9"),
+                          disp("art9.II", "que não houve violação;", "inciso", "art9"),
+                          disp("art9.III", "que a culpa é exclusiva de terceiro.", "inciso", "art9")]
+        busca = Busca(lei)
+        perguntas = [Pergunta("culpa exclusiva de terceiro", ["art9"], "lei")]
+        self.assertEqual([r.dispositivo.id for r in busca.buscar(perguntas[0].pergunta).resultados], ["art9.III"])
+        sem, _ = avaliar(busca, perguntas, contexto=Contexto(lei, lista_maxima=0))
+        com, _ = avaliar(busca, perguntas, contexto=Contexto(lei))
+        self.assertEqual((sem.inteira_nos_trechos, com.inteira_nos_trechos), (0, 1))
+
     def test_cobertura(self):
         busca = Busca(self.lei)
         self.assertEqual(busca.buscar("alíquota do ICMS").cobertura, 0.0)
         self.assertEqual(busca.buscar("portabilidade dos dados").cobertura, 1.0)
         self.assertTrue(0 < busca.buscar("portabilidade do IPVA").cobertura < 1)
+
+
+class Definicoes(unittest.TestCase):
+    def setUp(self):
+        # "titular" aparece em todo lugar e pesa pouco; a definição sozinha perderia no BM25.
+        self.lei = [
+            disp("art5", "Para os fins desta Lei, considera-se:"),
+            disp("art5.I", "titular: pessoa natural a quem se referem os dados;", "inciso", "art5"),
+            disp("art5.II", "dado anonimizado: dado que não identifica o titular;", "inciso", "art5"),
+            disp("art5.III", "anonimização: meio pelo qual um dado perde a associação a um indivíduo;", "inciso", "art5"),
+            disp("art5.IV", "encarregado: pessoa indicada pelo controlador;", "inciso", "art5"),
+            disp("art6", "O titular pode pedir acesso. O titular pode pedir correção. Quem é o titular decide."),
+            disp("art7", "O titular é informado sobre o dado anonimizado e o titular é ouvido."),
+        ]
+
+    def ids(self, busca, pergunta):
+        return [r.dispositivo.id for r in busca.buscar(pergunta).resultados]
+
+    def test_pergunta_de_conceito_vai_a_definicao(self):
+        busca = Busca(self.lei)
+        self.assertEqual(self.ids(busca, "Quem é o titular dos dados?")[0], "art5.I")
+        self.assertEqual(self.ids(busca, "O que a lei chama de titular?")[0], "art5.I")
+
+    def test_sem_o_atalho_a_definicao_perde(self):
+        self.assertNotEqual(self.ids(Busca(self.lei, definicoes=False), "Quem é o titular dos dados?")[0], "art5.I")
+
+    def test_so_pergunta_de_conceito(self):
+        busca = Busca(self.lei)
+        self.assertEqual(busca.definicoes_pedidas("O titular pode pedir acesso?"), [])
+        self.assertEqual(busca.definicoes_pedidas("Quem é o titular?")[0].id, "art5.I")
+
+    def test_expressao_mais_longa_ganha(self):
+        # "anonimizado" e "anonimização" têm o mesmo radical.
+        busca = Busca(self.lei)
+        self.assertEqual([d.id for d in busca.definicoes_pedidas("O que é dado anonimizado?")], ["art5.II"])
+        self.assertEqual([d.id for d in busca.definicoes_pedidas("O que é anonimização?")], ["art5.III"])
+
+    def test_duas_definicoes_na_ordem_da_pergunta(self):
+        busca = Busca(self.lei)
+        pedidas = busca.definicoes_pedidas("Qual a diferença entre anonimização e titular?")
+        self.assertEqual([d.id for d in pedidas], ["art5.III", "art5.I"])
+
+    def test_glossario_vale_antes(self):
+        busca = Busca(self.lei, glossario={"dpo": "encarregado"})
+        self.assertEqual([d.id for d in busca.definicoes_pedidas("O que é um DPO?")], ["art5.IV"])
 
 
 class Gabarito(unittest.TestCase):
@@ -114,9 +173,26 @@ class Gabarito(unittest.TestCase):
         # Trava contra regressão, só no conjunto de desenvolvimento.
         busca = Busca(list(self.lei.values()), glossario=GLOSSARIO)
         medida, _ = avaliar(busca, self.desenvolvimento)
-        self.assertGreaterEqual(medida.artigo_nos_5, 28)
-        self.assertGreaterEqual(medida.artigo_no_1, 19)
+        self.assertGreaterEqual(medida.artigo_nos_5, 30)
+        self.assertGreaterEqual(medida.artigo_no_1, 24)
+        self.assertGreaterEqual(medida.inteira_nos_trechos, 30)
         self.assertEqual(medida.na_lei_recusadas, 0)
+
+    def test_empresa_estrangeira_e_transferencia(self):
+        # "Estrangeiro" leva ao art. 3º (a lei vale qualquer que seja o país da sede);
+        # mandar dados para outro país continua levando ao art. 33.
+        busca = Busca(list(self.lei.values()), glossario=GLOSSARIO)
+        self.assertEqual(busca.buscar("Uma empresa estrangeira precisa seguir a LGPD?").artigos[0], "3")
+        self.assertEqual(busca.buscar("Posso mandar dados de clientes para outro país?").artigos[0], "33")
+        self.assertIn("3", busca.buscar("A LGPD vale para sites de fora do Brasil usados por brasileiros?").artigos)
+
+    def test_sem_os_ajustes_volta_ao_que_era(self):
+        # As opções --sem-definicoes e --sem-listas reproduzem a busca da etapa 4.
+        lei = list(self.lei.values())
+        busca = Busca(lei, glossario=GLOSSARIO, definicoes=False)
+        medida, _ = avaliar(busca, self.desenvolvimento, contexto=Contexto(lei, lista_maxima=0))
+        self.assertEqual(medida.artigo_no_1, 21)
+        self.assertEqual(medida.inteira_nos_trechos, 17)
 
     def test_arquivos_sao_jsonl_valido(self):
         for nome in ("desenvolvimento.jsonl", "teste.jsonl"):

@@ -1,6 +1,6 @@
 """Junta as peças: busca, prompt, modelo e conferência.
 
-Uso (por enquanto, só mostra o que iria para o modelo):
+Uso (mostra o que iria para o modelo, sem chamar nenhum):
     python -m lgpd_rag.perguntar "Preciso de um DPO?"
 """
 
@@ -14,6 +14,7 @@ from typing import Sequence
 from .avaliar import LIMIAR_PADRAO
 from .busca import Busca, Resposta
 from .conferencia import RespostaConferida, conferir, recusada, rejeitada
+from .contexto import Contexto
 from .gemini import ErroDoModelo
 from .glossario import GLOSSARIO
 from .lei import Dispositivo, carregar
@@ -30,23 +31,17 @@ class Assistente:
         modelo: Modelo,
         busca: Busca | None = None,
         limiar: float = LIMIAR_PADRAO,
+        contexto: Contexto | None = None,
     ) -> None:
-        self.por_id = {d.id: d for d in lei}
-        self._ordem = {d.id: i for i, d in enumerate(lei)}
         self.busca = busca or Busca(lei, glossario=GLOSSARIO)
+        self.contexto = contexto or Contexto(lei)
         self.modelo = modelo
         self.limiar = limiar
 
     def trechos(self, pergunta: str) -> tuple[Resposta, list[Dispositivo]]:
-        """O que a busca achou, mais quem está acima (o caput de um inciso), na ordem da lei."""
+        """O que a busca achou, com quem está acima e as listas inteiras, na ordem da lei."""
         achado = self.busca.buscar(pergunta)
-        ids: set[str] = set()
-        for r in achado.resultados:
-            atual: str | None = r.dispositivo.id
-            while atual:
-                ids.add(atual)
-                atual = self.por_id[atual].pai
-        return achado, sorted((self.por_id[i] for i in ids), key=lambda d: self._ordem[d.id])
+        return achado, self.contexto.trechos(r.dispositivo for r in achado.resultados)
 
     def preparar(self, pergunta: str) -> RespostaConferida | tuple[str, list[Dispositivo]]:
         """A recusa ou rejeição que acontece antes do modelo, ou a mensagem que iria para ele."""
@@ -88,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
     print(SISTEMA)
     print("\n=== mensagem do usuário ===")
     print(montar_mensagem(args.pergunta, trechos))
-    print("\nO modelo de verdade entra na etapa 4.")
+    print("\nNenhum modelo foi chamado. A avaliação com o modelo de verdade é o lgpd_rag.avaliar_respostas.")
     return 0
 
 
