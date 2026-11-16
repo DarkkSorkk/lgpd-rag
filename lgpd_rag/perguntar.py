@@ -14,6 +14,7 @@ from typing import Sequence
 from .avaliar import LIMIAR_PADRAO
 from .busca import Busca, Resposta
 from .conferencia import RespostaConferida, conferir, recusada, rejeitada
+from .gemini import ErroDoModelo
 from .glossario import GLOSSARIO
 from .lei import Dispositivo, carregar
 from .modelo import Modelo
@@ -47,21 +48,29 @@ class Assistente:
                 atual = self.por_id[atual].pai
         return achado, sorted((self.por_id[i] for i in ids), key=lambda d: self._ordem[d.id])
 
-    def perguntar(self, pergunta: str) -> RespostaConferida:
+    def preparar(self, pergunta: str) -> RespostaConferida | tuple[str, list[Dispositivo]]:
+        """A recusa ou rejeição que acontece antes do modelo, ou a mensagem que iria para ele."""
         pergunta = pergunta.strip()
         if not pergunta:
             return rejeitada("pergunta vazia")
         if len(pergunta) > TAMANHO_MAXIMO_PERGUNTA:
             return rejeitada(f"pergunta com mais de {TAMANHO_MAXIMO_PERGUNTA} caracteres")
-
         achado, trechos = self.trechos(pergunta)
-        encontrados = [d.rotulo for d in trechos]
         if not trechos or achado.cobertura < self.limiar:
             return recusada("nenhuma palavra da pergunta aparece na lei")  # sem chamar o modelo
+        return montar_mensagem(pergunta, trechos), trechos
 
+    def perguntar(self, pergunta: str) -> RespostaConferida:
+        preparado = self.preparar(pergunta)
+        if isinstance(preparado, RespostaConferida):
+            return preparado
+        mensagem, trechos = preparado
+        encontrados = [d.rotulo for d in trechos]
         try:
-            saida = self.modelo.responder(SISTEMA, montar_mensagem(pergunta, trechos))
-        except Exception as erro:  # rede, cota, chave: quem pergunta vê só que falhou
+            saida = self.modelo.responder(SISTEMA, mensagem)
+        except ErroDoModelo as erro:  # mensagem já sem a chave
+            return replace(rejeitada(f"erro ao chamar o modelo ({erro})"), encontrados=encontrados)
+        except Exception as erro:  # outro erro: só o tipo, para não vazar detalhe
             return replace(rejeitada(f"erro ao chamar o modelo ({type(erro).__name__})"), encontrados=encontrados)
         return replace(conferir(saida, {d.id: d for d in trechos}), encontrados=encontrados)
 

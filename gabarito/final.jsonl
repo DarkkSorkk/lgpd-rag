@@ -1,0 +1,25 @@
+{"pergunta": "O que é tratamento de dados, segundo a lei?", "esperado": ["art5.X"], "tipo": "lei", "nota": "Toda operação com dados pessoais (coleta, uso, armazenamento, eliminação etc.)."}
+{"pergunta": "O que é dado anonimizado?", "esperado": ["art5.III"], "tipo": "lei", "nota": "Dado de titular que não pode ser identificado com meios técnicos razoáveis."}
+{"pergunta": "O que significa eliminação de dados?", "esperado": ["art5.XIV"], "tipo": "lei", "nota": "Exclusão de dado ou conjunto de dados armazenados, qualquer que seja o procedimento."}
+{"pergunta": "Quem é o titular dos dados?", "esperado": ["art5.V"], "tipo": "lei", "nota": "A pessoa natural a quem os dados se referem."}
+{"pergunta": "Dados anonimizados são considerados dados pessoais?", "esperado": ["art12"], "tipo": "lei", "nota": "Não, salvo se a anonimização puder ser revertida."}
+{"pergunta": "Em que situações posso tratar dados sensíveis sem consentimento?", "esperado": ["art11.II"], "tipo": "lei", "nota": "Nas hipóteses do art. 11, II, quando indispensável (obrigação legal, políticas públicas, pesquisa, exercício de direitos, vida, saúde, prevenção à fraude)."}
+{"pergunta": "O que é o princípio da transparência?", "esperado": ["art6.VI"], "tipo": "lei", "nota": "Garantia de informações claras, precisas e acessíveis sobre o tratamento e os agentes."}
+{"pergunta": "O titular pode se opor a um tratamento feito sem consentimento?", "esperado": ["art18.p2"], "tipo": "lei", "nota": "Sim, em caso de descumprimento da lei."}
+{"pergunta": "Quais informações o titular tem direito de receber sobre o tratamento dos seus dados?", "esperado": ["art9"], "tipo": "lei", "nota": "Acesso facilitado: finalidade, forma e duração, identificação e contato do controlador, uso compartilhado, responsabilidades e direitos."}
+{"pergunta": "Em quais casos os agentes de tratamento não são responsabilizados por danos?", "esperado": ["art43"], "tipo": "lei", "nota": "Quando provarem que não trataram os dados, que não violaram a lei ou que a culpa é exclusiva do titular ou de terceiro."}
+{"pergunta": "O que a lei diz sobre regras de boas práticas e governança?", "esperado": ["art50"], "tipo": "lei", "nota": "Controladores e operadores podem formular regras de boas práticas e de governança."}
+{"pergunta": "A autoridade nacional pode pedir relatórios de impacto a órgãos públicos?", "esperado": ["art32"], "tipo": "lei", "nota": "Sim, pode solicitar a publicação de relatórios de impacto a agentes do Poder Público."}
+{"pergunta": "Dados de saúde podem ser compartilhados entre empresas para obter vantagem econômica?", "esperado": ["art11.p4"], "tipo": "lei", "nota": "Não, é vedado, salvo as exceções do próprio parágrafo."}
+{"pergunta": "Planos de saúde podem usar dados de saúde para selecionar riscos?", "esperado": ["art11.p5"], "tipo": "lei", "nota": "Não, é vedado às operadoras de planos de saúde."}
+{"pergunta": "A LGPD vale para dados usados em segurança pública?", "esperado": ["art4.III"], "tipo": "lei", "nota": "Não se aplica; a lei diz que será regido por legislação específica."}
+{"pergunta": "Pedi a uma empresa para confirmar se ela tem meus dados. Em quantos dias ela tem que responder?", "esperado": ["art19"], "tipo": "cotidiana", "nota": "Em formato simplificado, imediatamente; a declaração completa, em até 15 dias."}
+{"pergunta": "Um sistema automático negou meu crédito. Posso pedir que uma pessoa revise a decisão?", "esperado": ["art20"], "tipo": "cotidiana", "nota": "Pode pedir a revisão da decisão automatizada. A lei não exige que a revisão seja feita por uma pessoa (o § 3º, que tratava disso, foi vetado)."}
+{"pergunta": "Uma empresa dos Estados Unidos que vende para brasileiros precisa seguir a LGPD?", "esperado": ["art3"], "tipo": "cotidiana", "nota": "Sim: a lei vale independentemente do país da sede quando a oferta é para pessoas no Brasil ou os dados são coletados aqui."}
+{"pergunta": "Se a empresa terceirizada que cuida dos meus dados causar um dano, ela também responde?", "esperado": ["art42.p1"], "tipo": "cotidiana", "nota": "Sim, o operador responde solidariamente se descumprir a lei ou as instruções lícitas do controlador."}
+{"pergunta": "Sofri um prejuízo porque uma empresa usou mal os meus dados. Posso pedir indenização?", "esperado": ["art42"], "tipo": "cotidiana", "nota": "Sim, quem causar dano em violação à lei é obrigado a repará-lo."}
+{"pergunta": "Quanto custa abrir uma empresa no Simples Nacional?", "esperado": [], "tipo": "fora", "nota": "A LGPD não trata disso."}
+{"pergunta": "Qual o limite de velocidade numa rodovia federal?", "esperado": [], "tipo": "fora", "nota": "A LGPD não trata disso."}
+{"pergunta": "Como funciona o seguro-desemprego?", "esperado": [], "tipo": "fora", "nota": "A LGPD não trata disso."}
+{"pergunta": "Qual a multa por atraso na entrega do Imposto de Renda?", "esperado": [], "tipo": "fora", "nota": "A LGPD não trata disso (a palavra multa engana a busca)."}
+{"pergunta": "Quem pode ser candidato a presidente da República?", "esperado": [], "tipo": "fora", "nota": "A LGPD não trata disso."}

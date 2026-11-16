@@ -33,7 +33,8 @@ LIMIAR_PADRAO = 0.01
 class Pergunta:
     pergunta: str
     esperado: list[str]  # vazio: a LGPD não trata do assunto
-    tipo: str  # "lei", "cotidiana" ou "fora"
+    tipo: str  # "lei", "cotidiana", "fora" ou "ataque"
+    nota: str = ""  # o que uma resposta certa precisa dizer (para a revisão manual)
 
 
 def ler_gabarito(caminho: str | Path) -> list[Pergunta]:
