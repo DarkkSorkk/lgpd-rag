@@ -5,6 +5,8 @@ Uma resposta só passa se:
 - tiver pelo menos uma citação;
 - cada citação apontar para um dispositivo que foi enviado ao modelo;
 - o trecho citado aparecer, letra por letra, no texto desse dispositivo;
+- o trecho tiver pelo menos 15 caracteres, ou for o dispositivo inteiro
+  (há incisos mais curtos, como "a reincidência;");
 - a resposta só mencionar artigos que foram citados (ou que aparecem no texto
   dos dispositivos citados, como "exceto nas hipóteses previstas no art. 16").
 
@@ -121,7 +123,8 @@ def conferir(saida: str, enviados: Mapping[str, Dispositivo]) -> RespostaConferi
             return rejeitada(f"citou {ident}, que não estava nos trechos enviados")
         if "..." in trecho or "…" in trecho:
             return rejeitada(f"o trecho citado do {dispositivo.rotulo} tem reticências")
-        if len(normalizar(trecho)) < TRECHO_MINIMO:
+        # Dispositivo mais curto que o mínimo só passa citado inteiro.
+        if len(normalizar(trecho)) < min(TRECHO_MINIMO, len(normalizar(dispositivo.texto))):
             return rejeitada(f"o trecho citado do {dispositivo.rotulo} é curto demais")
         if normalizar(trecho) not in normalizar(dispositivo.texto):
             return rejeitada(f"o trecho citado não está no {dispositivo.rotulo}")

@@ -16,7 +16,7 @@ O gabarito foi escrito antes de mexer no código (commit `49a9c78`, SHA-256 `190
 | 3 | Quem são os agentes de tratamento? | certa | Art. 5º, IX: o controlador e o operador. |
 | 4 | O que é bloqueio de dados? | certa | Art. 5º, XIII. |
 | 5 | Em quais situações a LGPD não se aplica? | certa | As quatro do art. 4º, com as alíneas do II e do III. |
-| 6 | Quais critérios a autoridade considera ao aplicar uma sanção? | **barrada** | Falha da conferência. O modelo citou o art. 52, § 1º, V, que é só "a reincidência;". A conferência exige pelo menos 15 caracteres, e o inciso inteiro, sem o ponto e vírgula, tem 14. A citação era verdadeira. |
+| 6 | Quais critérios a autoridade considera ao aplicar uma sanção? | **barrada** | Falha da conferência. O modelo citou o art. 52, § 1º, V, que é só "a reincidência;". A conferência exigia pelo menos 15 caracteres, e o inciso inteiro, sem o ponto e vírgula, tem 14: nenhuma citação dele passaria. A resposta barrada não é salva, então não dá para saber se o resto dela estava certo. |
 | 7 | Quais são as competências da ANPD? | certa, **incompleta** | "Entre as competências estão…": não diz que a lista está completa, como a nota pede. Mas traz competências secundárias (art. 55-J, XX e XXI, e o art. 55-K) e deixa de fora as principais, como fiscalizar e aplicar sanções. A lista de 24 itens não vai inteira para o modelo, de propósito. |
 | 8 | Em quais casos os dados podem ser guardados depois do fim do tratamento? | recusada | Falha da busca: a lei diz "conservação" (art. 16), e a busca não liga as duas palavras. O modelo recusou em vez de inventar. |
 | 9 | O governo pode passar meus dados para uma empresa privada? | certa | Art. 26, § 1º: em regra não, com as quatro exceções em vigor (o II foi vetado). |
@@ -60,7 +60,9 @@ As outras 14 continuam certas, e as 5 perguntas de fora continuam recusadas.
 ## O que a revisão mostra
 
 - **A busca nova resolveu o que prometia.** No gabarito novo, as perguntas de definição chegaram ao art. 5º. Só uma resposta saiu incompleta por lista cortada: a das competências da ANPD, que fica de fora de propósito.
-- **A conferência barrou uma resposta certa.** Sete dispositivos em vigor têm menos de 15 caracteres: o art. 52, § 1º, V e VI ("a reincidência;", "o grau do dano;"), quatro incisos do art. 55-C e o caput do art. 55-J. Com a regra de agora, nenhum deles pode ser citado. A correção é aceitar um trecho mais curto quando ele é o dispositivo inteiro.
+- **A conferência barrou uma resposta que não tinha como passar.** Sete dispositivos em vigor têm menos de 15 caracteres: o art. 52, § 1º, V e VI ("a reincidência;", "o grau do dano;"), quatro incisos do art. 55-C e o caput do art. 55-J. Com a regra da rodada, nenhum deles podia ser citado.
+  - **Corrigido depois da rodada:** um trecho mais curto passa quando é o dispositivo inteiro, e um teste cita inteiro cada dispositivo em vigor.
+  - **O número não muda:** a pergunta 6 continua contada como barrada, porque foi o que aconteceu na rodada.
 - **O que ainda falha:**
   - "guardados" e "conservação": a busca por palavra não liga sinônimos que não estão no glossário;
   - as 24 competências da ANPD: sem a lista inteira, o modelo escolhe quais mostrar.

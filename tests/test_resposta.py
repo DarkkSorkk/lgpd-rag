@@ -94,6 +94,27 @@ class Conferir(unittest.TestCase):
 
     def test_trecho_curto_demais(self):
         self.rejeita(saida(citacoes=[{"id": "art41", "trecho": "controlador"}]), "curto demais")
+        # Pontuação nas pontas não conta para o tamanho.
+        self.rejeita(saida(citacoes=[{"id": "art41", "trecho": "controlador ;.;.;."}]), "curto demais")
+
+    def test_dispositivo_curto_citado_inteiro_passa(self):
+        # Na rodada de 16/11/2026, o art. 52, § 1º, V ("a reincidência;") não podia ser citado.
+        enviados = {"art52.p1.V": POR_ID["art52.p1.V"]}
+        for trecho in ("a reincidência;", "A reincidência"):
+            r = conferir(saida(resposta="A reincidência conta.", citacoes=[{"id": "art52.p1.V", "trecho": trecho}]), enviados)
+            self.assertEqual(r.situacao, "respondida", trecho)
+
+    def test_pedaco_de_dispositivo_curto_continua_curto_demais(self):
+        enviados = {"art52.p1.V": POR_ID["art52.p1.V"]}
+        r = conferir(saida(resposta="A reincidência conta.", citacoes=[{"id": "art52.p1.V", "trecho": "reincidência"}]), enviados)
+        self.assertEqual(r.situacao, "rejeitada")
+        self.assertIn("curto demais", r.motivo)
+
+    def test_todo_dispositivo_em_vigor_pode_ser_citado_inteiro(self):
+        for d in LEI:
+            if d.situacao == "vigente":
+                r = conferir(saida(resposta="Sim.", citacoes=[{"id": d.id, "trecho": d.texto}]), {d.id: d})
+                self.assertEqual(r.situacao, "respondida", f"{d.id}: {r.motivo}")
 
     def test_reticencias(self):
         self.rejeita(saida(citacoes=[{"id": "art41", "trecho": "O controlador ... encarregado"}]), "reticências")

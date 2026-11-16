@@ -83,6 +83,7 @@ python -m lgpd_rag.avaliar gabarito/teste.jsonl --limiar 0.28
    - tem pelo menos uma citação;
    - cada citação aponta para um dispositivo que foi enviado ao modelo;
    - o trecho citado está no texto desse dispositivo, letra por letra. Só não contam diferenças de espaço, maiúscula e aspas;
+   - o trecho tem pelo menos 15 caracteres, para "dados pessoais" sozinho não servir de prova. Um dispositivo mais curto, como "a reincidência;", só passa citado inteiro;
    - a resposta só menciona artigos citados, ou que aparecem no texto dos dispositivos citados.
 
 Se alguma condição falha, quem perguntou vê uma frase fixa ("Não consegui uma resposta com citação conferida na lei") e a lista de dispositivos que a busca achou. Quando o modelo diz que a lei não trata do assunto, o texto mostrado também é uma frase fixa do código, nunca o que o modelo escreveu.
@@ -208,7 +209,7 @@ A rodada foi em 16/11/2026, com o mesmo `gemini-3.8-flash` pelo Vertex AI. O gab
 | Certas na revisão manual | 16/20 (80%) |
 | Certas, mas incompletas (nenhuma parece trazer tudo) | 2/20 |
 | Recusada porque a busca não achou o dispositivo | 1/20 |
-| Barrada pela conferência, com a citação certa | 1/20 |
+| Barrada por um defeito da conferência, já corrigido | 1/20 |
 | Inventaram dispositivo ou disseram o contrário da lei | 0/20 |
 
 | Outras | |
@@ -221,7 +222,9 @@ O gabarito novo não rodou com a busca antiga e o modelo. Nele, a comparação d
 **O conjunto final antigo, de novo:** as respostas certas foram de 14/20 para 20/20, e as 6 falhas da [revisão de 15/11](#resultado-com-o-modelo-de-verdade) sumiram. Os diagnósticos saíram desse conjunto, então ele só confirma as correções e não mede a melhoria.
 
 **O que a revisão mostrou:**
-- **A conferência barrou uma resposta certa.** O modelo citou o art. 52, § 1º, V, que é só "a reincidência;". A conferência exige pelo menos 15 caracteres no trecho, e o inciso inteiro, sem o ponto e vírgula, tem 14. Sete dispositivos em vigor são curtos assim e, com a regra de agora, não podem ser citados.
+- **A conferência barrou uma resposta que não tinha como passar.** O modelo citou o art. 52, § 1º, V, que é só "a reincidência;". A conferência exigia pelo menos 15 caracteres no trecho, e o inciso inteiro, sem o ponto e vírgula, tem 14. Sete dispositivos em vigor eram curtos assim e não podiam ser citados.
+  - **Corrigido depois da rodada:** um trecho mais curto passa quando é o dispositivo inteiro, e um teste cita inteiro cada dispositivo em vigor.
+  - **O número não muda:** a resposta barrada não é salva, então não dá para saber se estava certa. Ela continua contada como barrada.
 - **As duas incompletas:** a das competências da ANPD diz "entre as competências estão", mas escolhe competências secundárias. A dos órgãos de pesquisa não diz que a anonimização deve ser usada sempre que possível.
 - **A recusa:** a pergunta sobre dados "guardados", que a lei chama de "conservação". O modelo recusou em vez de inventar.
 
