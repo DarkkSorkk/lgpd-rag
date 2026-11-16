@@ -3,6 +3,7 @@ import json
 import tempfile
 import unittest
 from contextlib import redirect_stderr
+from dataclasses import asdict
 from pathlib import Path
 
 from lgpd_rag.avaliar import Pergunta, ler_gabarito
@@ -97,6 +98,33 @@ class Rodada(unittest.TestCase):
         self.assertEqual(e["chamadas"], 1)
         self.assertGreater(e["tokens_entrada"], 500)
         self.assertGreater(e["custo_usd"], 0)
+
+    def test_barrada_guarda_o_que_o_modelo_escreveu(self):
+        # Na rodada de 16/11/2026, uma resposta barrada não deixou nada para revisar.
+        bruta = json.dumps({"fora_da_lei": False, "resposta": "Pelo art. 99, não precisa.",
+                            "citacoes": [{"id": "art99", "trecho": "Fica dispensado o encarregado"}]})
+        perguntas = [Pergunta("Minha empresa precisa ter um DPO?", ["art41"], "cotidiana")]
+        registro = rodar(Assistente(LEI, ModeloSimulado(bruta)), perguntas, avisar=lambda _: None)[0]
+        self.assertEqual(registro.resposta.situacao, "rejeitada")
+        self.assertEqual(registro.saida_modelo, bruta)
+        self.assertNotIn("art. 99", json.dumps(asdict(registro.resposta), ensure_ascii=False))  # quem pergunta não vê
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = Path(pasta) / "x.jsonl"
+            salvar([registro], caminho)
+            self.assertEqual(json.loads(caminho.read_text(encoding="utf-8"))["saida_modelo"], bruta)
+
+    def test_so_a_barrada_guarda(self):
+        recusa = json.dumps({"fora_da_lei": True})
+        perguntas = [Pergunta("Minha empresa precisa ter um DPO?", ["art41"], "cotidiana")] * 3
+        modelo = ModeloSimulado(DPO, recusa, ErroDoModelo("HTTP 503"))
+        registros = rodar(Assistente(LEI, modelo), perguntas, avisar=lambda _: None)
+        self.assertEqual([r.resposta.situacao for r in registros], ["respondida", "recusada", "rejeitada"])
+        self.assertEqual([r.saida_modelo for r in registros], [None, None, None])
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = Path(pasta) / "x.jsonl"
+            salvar(registros, caminho)
+            for linha in caminho.read_text(encoding="utf-8").splitlines():
+                self.assertNotIn("saida_modelo", json.loads(linha))
 
     def test_salvar(self):
         registros = [Registro(Pergunta("a", ["art41"], "lei", "nota"), respondida("art41"))]

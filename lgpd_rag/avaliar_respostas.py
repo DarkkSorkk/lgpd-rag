@@ -11,7 +11,8 @@ usa o Vertex AI no projeto indicado, com o login do gcloud, sem chave nenhuma.
 --estimar mostra quantas chamadas e quanto deve custar, sem chamar o modelo.
 Para chamar de verdade, é preciso --confirmo-custo; a rodada para antes de
 passar do teto. As respostas vão para resultados/<gabarito>.jsonl, para a
-revisão manual contra o campo "nota" do gabarito.
+revisão manual contra o campo "nota" do gabarito. Quando a conferência barra
+uma resposta, o arquivo também guarda o que o modelo escreveu (saida_modelo).
 """
 
 from __future__ import annotations
@@ -46,6 +47,9 @@ ERROS_SEGUIDOS_PARA_PARAR = 3  # chave errada não deve gerar 25 tentativas
 class Registro:
     pergunta: Pergunta
     resposta: RespostaConferida
+    # O que o modelo escreveu, só quando a conferência barrou: sem isso, a revisão
+    # não tem como saber se a resposta barrada estava certa.
+    saida_modelo: str | None = None
 
 
 def rodar(
@@ -63,8 +67,8 @@ def rodar(
         if teto_usd is not None and custo_atual() >= teto_usd:
             avisar(f"Teto de US$ {teto_usd:.2f} atingido: parando antes da pergunta {n}.")
             break
-        resposta = assistente.perguntar(p.pergunta)
-        registros.append(Registro(p, resposta))
+        resposta, saida = assistente.perguntar_para_revisao(p.pergunta)
+        registros.append(Registro(p, resposta, saida if resposta.situacao == "rejeitada" else None))
         detalhe = f" ({resposta.motivo})" if resposta.situacao != "respondida" and resposta.motivo else ""
         avisar(f"[{n}/{len(perguntas)}] {resposta.situacao:10} {p.pergunta[:60]}{detalhe}")
         erros_seguidos = erros_seguidos + 1 if erro_do_modelo(resposta) else 0
@@ -147,9 +151,12 @@ def estimar(assistente: Assistente, perguntas: Sequence[Pergunta], preco_entrada
 
 def salvar(registros: Sequence[Registro], caminho: Path) -> None:
     caminho.parent.mkdir(parents=True, exist_ok=True)
-    linhas = [
-        json.dumps({**asdict(r.pergunta), **asdict(r.resposta)}, ensure_ascii=False) for r in registros
-    ]
+    linhas = []
+    for r in registros:
+        dados = {**asdict(r.pergunta), **asdict(r.resposta)}
+        if r.saida_modelo is not None:
+            dados["saida_modelo"] = r.saida_modelo
+        linhas.append(json.dumps(dados, ensure_ascii=False))
     caminho.write_text("\n".join(linhas) + "\n", encoding="utf-8", newline="\n")
 
 

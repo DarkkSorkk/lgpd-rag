@@ -56,18 +56,27 @@ class Assistente:
         return montar_mensagem(pergunta, trechos), trechos
 
     def perguntar(self, pergunta: str) -> RespostaConferida:
+        """O que quem perguntou pode ver: só o que passou pela conferência."""
+        return self.perguntar_para_revisao(pergunta)[0]
+
+    def perguntar_para_revisao(self, pergunta: str) -> tuple[RespostaConferida, str | None]:
+        """A resposta conferida e o texto do modelo, quando ele chegou a responder.
+
+        O texto do modelo não passou pela conferência. Ele serve só para a revisão
+        manual da avaliação e nunca vai para quem perguntou.
+        """
         preparado = self.preparar(pergunta)
         if isinstance(preparado, RespostaConferida):
-            return preparado
+            return preparado, None
         mensagem, trechos = preparado
         encontrados = [d.rotulo for d in trechos]
         try:
             saida = self.modelo.responder(SISTEMA, mensagem)
         except ErroDoModelo as erro:  # mensagem já sem a chave
-            return replace(rejeitada(f"erro ao chamar o modelo ({erro})"), encontrados=encontrados)
+            return replace(rejeitada(f"erro ao chamar o modelo ({erro})"), encontrados=encontrados), None
         except Exception as erro:  # outro erro: só o tipo, para não vazar detalhe
-            return replace(rejeitada(f"erro ao chamar o modelo ({type(erro).__name__})"), encontrados=encontrados)
-        return replace(conferir(saida, {d.id: d for d in trechos}), encontrados=encontrados)
+            return replace(rejeitada(f"erro ao chamar o modelo ({type(erro).__name__})"), encontrados=encontrados), None
+        return replace(conferir(saida, {d.id: d for d in trechos}), encontrados=encontrados), saida
 
 
 def main(argv: list[str] | None = None) -> int:
