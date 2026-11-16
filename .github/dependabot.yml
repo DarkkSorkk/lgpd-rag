@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # O projeto não tem dependências em Python; só as actions do CI são atualizadas.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

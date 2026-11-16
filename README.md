@@ -1,8 +1,16 @@
 # lgpd-rag
 
+[![ci](https://github.com/DarkkSorkk/lgpd-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/DarkkSorkk/lgpd-rag/actions/workflows/ci.yml)
+
 Pergunte à LGPD e receba a resposta com o dispositivo de onde ela saiu, conferido pelo código contra o texto oficial da lei.
 
-> **Em construção.** Etapa 4 de 5 pronta: a lei dividida em dispositivos, a busca medida contra um gabarito, a resposta com citação conferida pelo código e a medição com o modelo de verdade, já com a [melhoria da busca](#melhoria-da-busca). Falta a publicação.
+> **English:** a small RAG over Brazil's data protection law (LGPD). Every answer cites the provision it came from, and code checks each quote, letter by letter, against the official text before anything is shown. Measured on a question set written before the last code changes, with every answer reviewed by hand. Python, no dependencies.
+
+**Em resumo:**
+- **Só aparece resposta com citação conferida.** O modelo devolve a resposta e um trecho copiado de cada dispositivo citado, e o código confere se o trecho está mesmo na lei. Se não estiver, quem perguntou vê uma frase fixa, nunca o que o modelo escreveu.
+- **Medido num gabarito escrito antes de mexer no código**, com cada resposta revisada à mão. Das 20 perguntas que a lei responde, 16 respostas estão certas e 2 certas mas incompletas, e nenhuma inventou dispositivo ou disse o contrário da lei. As 5 perguntas de fora da LGPD foram recusadas, e nenhum dos 6 ataques de prompt injection funcionou. Veja [com o modelo](#com-o-modelo).
+- **O que falhou também está aqui:** a busca por palavra não liga "guardados" a "conservação", e uma regra da conferência barrou uma resposta que não tinha como passar (já corrigida).
+- **Sem dependências:** Python 3.12 ou mais novo. Os testes rodam no CI com um modelo simulado, sem custo. A avaliação com o modelo de verdade só roda com `--confirmo-custo` e para antes do teto de gasto.
 
 ## O texto da lei
 
@@ -42,7 +50,7 @@ O gabarito tem perguntas com os dispositivos que as respondem, escritos à mão 
 - [`desenvolvimento.jsonl`](gabarito/desenvolvimento.jsonl): 30 perguntas que a lei responde e 4 fora dela. Serviu para ajustar a busca: o glossário, o corte das palavras e o limite de recusa.
 - [`teste.jsonl`](gabarito/teste.jsonl): 16 perguntas que a lei responde e 4 fora dela. Foi medido uma vez só, no fim, com tudo congelado.
 
-Estes números são da busca como ela era na etapa 3. A [melhoria da busca](#melhoria-da-busca) tem os de agora.
+Estes números são da primeira versão da busca. A [melhoria da busca](#melhoria-da-busca) tem os de agora.
 
 | | Desenvolvimento (usado para ajustar) | Teste (medido uma vez) |
 |---|---|---|
@@ -63,7 +71,7 @@ A busca por palavra não liga sinônimos que não estão no glossário. A busca 
 - **A tentativa:** a busca mede quanto das palavras da pergunta existe na lei e recusa quando é pouco. O limite foi escolhido no desenvolvimento (0,28).
 - **O resultado no teste:** recusou 3 de 16 perguntas boas e deixou passar 3 de 4 perguntas de fora.
 - **A conclusão:** a busca por palavra não sabe dizer quando a lei não trata do assunto.
-- **Como ficou:** agora ela só recusa quando nenhuma palavra da pergunta existe na lei ("alíquota do ICMS"). O resto da recusa fica com o modelo, que lê os dispositivos (etapa 3), e com o código, que confere a citação.
+- **Como ficou:** agora ela só recusa quando nenhuma palavra da pergunta existe na lei ("alíquota do ICMS"). O resto da recusa fica com o modelo, que lê os dispositivos, e com o código, que confere a citação.
 
 O conjunto de teste já foi visto uma vez. Por isso, a medição com o modelo usou um conjunto novo, escrito antes da primeira chamada: [`final.jsonl`](gabarito/final.jsonl).
 
@@ -118,6 +126,7 @@ Quando o serviço está sobrecarregado (HTTP 503 ou tempo esgotado), o cliente t
 - [`ataques.jsonl`](gabarito/ataques.jsonl): 6 tentativas de prompt injection.
 - **O que mede:** quantas respostas passaram na conferência, quantas citaram o dispositivo esperado, quantas recusas estavam certas e o custo.
 - **Revisão:** as respostas ficam em `resultados/` e são revisadas uma a uma contra a nota ([`revisao.md`](resultados/revisao.md) e [`revisao-busca-nova.md`](resultados/revisao-busca-nova.md)).
+- **Respostas barradas:** quando a conferência barra uma resposta, o arquivo também guarda o que o modelo escreveu (`saida_modelo`). Isso serve só para a revisão e nunca vai para quem perguntou.
 
 **Custo:** sem `--confirmo-custo`, nada é chamado. `--estimar` mostra o custo antes de rodar, e a rodada para antes de passar do teto.
 
@@ -183,7 +192,7 @@ A revisão acima mostrou três falhas da busca. Cada uma ganhou uma correção:
 - O gabarito novo, [`final2.jsonl`](gabarito/final2.jsonl), tem 20 perguntas que a lei responde e 5 fora dela.
 - Ele foi escrito antes de mexer no código, e a busca só rodou nele uma vez, no fim.
 - Tem mais perguntas de definição e de lista (10 de 20), os dois tipos em que a busca falhou.
-- "Antes" é a busca do commit `0c3bc61`, da etapa 4.
+- "Antes" é a busca do commit `0c3bc61`, a da primeira rodada com o modelo.
 
 | Só a busca, sem modelo | Antes | Depois |
 |---|---|---|
@@ -193,7 +202,7 @@ A revisão acima mostrou três falhas da busca. Cada uma ganhou uma correção:
 | **Gabarito novo: artigo certo entre os 5 primeiros** | 18/20 (90%) | **19/20 (95%)** |
 | **Gabarito novo: resposta inteira nos trechos** | 12/20 (60%) | **18/20 (90%)** |
 
-No conjunto de teste da etapa 3, que já tinha sido visto, a resposta inteira passou de 11/16 para 14/16, e as outras medidas não mudaram.
+No [`teste.jsonl`](gabarito/teste.jsonl), que já tinha sido visto, a resposta inteira passou de 11/16 para 14/16, e as outras medidas não mudaram.
 
 **O que ainda falha no gabarito novo:**
 - "Quais são as competências da ANPD?": a lista tem 24 itens e fica de fora de propósito. A resposta pode resumir, mas não pode parecer completa.
@@ -224,7 +233,8 @@ O gabarito novo não rodou com a busca antiga e o modelo. Nele, a comparação d
 **O que a revisão mostrou:**
 - **A conferência barrou uma resposta que não tinha como passar.** O modelo citou o art. 52, § 1º, V, que é só "a reincidência;". A conferência exigia pelo menos 15 caracteres no trecho, e o inciso inteiro, sem o ponto e vírgula, tem 14. Sete dispositivos em vigor eram curtos assim e não podiam ser citados.
   - **Corrigido depois da rodada:** um trecho mais curto passa quando é o dispositivo inteiro, e um teste cita inteiro cada dispositivo em vigor.
-  - **O número não muda:** a resposta barrada não é salva, então não dá para saber se estava certa. Ela continua contada como barrada.
+  - **O número não muda:** a resposta barrada não foi salva, então não dá para saber se estava certa. Ela continua contada como barrada.
+  - **Agora a avaliação guarda o que o modelo escreveu** quando a conferência barra uma resposta, para a próxima revisão não ficar no escuro.
 - **As duas incompletas:** a das competências da ANPD diz "entre as competências estão", mas escolhe competências secundárias. A dos órgãos de pesquisa não diz que a anonimização deve ser usada sempre que possível.
 - **A recusa:** a pergunta sobre dados "guardados", que a lei chama de "conservação". O modelo recusou em vez de inventar.
 
@@ -243,6 +253,14 @@ Não há dependências. Rode com Python 3.12 ou mais novo:
 ```
 python -m unittest -v
 ```
+
+- **Nenhum teste chama modelo de verdade.** Os de resposta usam um modelo simulado, inclusive um que obedece ao ataque escondido na pergunta.
+- **O [CI](.github/workflows/ci.yml)** roda os testes no Python 3.12, 3.13 e 3.14 a cada envio, mede a busca contra os gabaritos e procura segredos e vulnerabilidades com o Trivy. As actions são fixadas pelo commit.
+- **Um teste fica de fora no CI:** o que confere o `dados/lgpd.json` contra a página salva do Planalto. A página não fica no repositório, então esse teste só roda no computador de quem a salvou.
+
+## Segurança
+
+Para avisar de um problema de segurança, veja [SECURITY.md](SECURITY.md).
 
 ## Licença
 
